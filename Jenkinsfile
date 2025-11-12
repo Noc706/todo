@@ -4,16 +4,19 @@ pipeline {
         DOCKER_COMPOSE = 'docker compose'
     }
     stages {
-        stage('Debug') {
-            steps {
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'echo "Current directory contents above"'
-            }
-        }
         stage('Build') {
             steps {
                 sh "${DOCKER_COMPOSE} build"
+            }
+        }
+        stage('Stop Old Containers') {
+            steps {
+                script {
+                    sh '''
+                        docker compose -p prod down || true
+                        docker rm -f todo-app1 todo-app2 nginx mysql 2>/dev/null || true
+                    '''
+                }
             }
         }
         stage('Deploy') {
